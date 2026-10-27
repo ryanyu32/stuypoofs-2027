@@ -2,6 +2,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,6 +17,8 @@ public class _37245_StuyPoofs_StarterBotAutoBlue extends LinearOpMode {
     private DcMotor lf, rf, lb, rb, intake;
     private DcMotorEx launcher;
     private IMU imu;
+    private CRServo windmillServo;
+
 
     private static final double DRIVE_POWER = 0.30;
     private static final double FIRST_DRIVE_SECONDS = 1.5;
@@ -33,6 +36,7 @@ public class _37245_StuyPoofs_StarterBotAutoBlue extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
         imu = hardwareMap.get(IMU.class, "imu");
+
 
         lf.setDirection(DcMotor.Direction.REVERSE);
         rf.setDirection(DcMotor.Direction.FORWARD);
@@ -58,22 +62,21 @@ public class _37245_StuyPoofs_StarterBotAutoBlue extends LinearOpMode {
         imu.resetYaw();
 
         driveForward(FIRST_DRIVE_SECONDS);
-        turnDegrees(135);
+        turnDegrees(90);
     //   driveForward(SECOND_DRIVE_SECONDS);
     //    turnDegrees(-135);
     //    driveForward(THIRD_DRIVE_SECONDS);
     //    turnDegrees(-135);
-
-        stopDrive();
-
-        launcher.setVelocity(LAUNCH_VELOCITY);
+        windmillServo.setPower(1.0);
+        launcher.setVelocity(2000);
         sleep(1800);
 
-        intake.setPower(0.65);
+        //intake.setPower(0.65);
         sleep((long) (FEED_SECONDS * 1000));
 
-        intake.setPower(0);
+        //intake.setPower(0);
         launcher.setVelocity(0);
+        windmillServo.setPower(0.0);
         stopDrive();
     }
 
