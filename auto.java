@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -19,13 +18,14 @@ public class _37245_SBotAutoV2 extends LinearOpMode {
     private IMU imu;
     private CRServo windmill;
 
-
     private static final double DRIVE_POWER = 0.45;
+    private static final double STRAFE_SECONDS = 1.75;
     private static final double FIRST_DRIVE_SECONDS = 3.071;
-    private static final double SECOND_DRIVE_SECONDS = 0.3;
+    private static final double SECOND_DRIVE_SECONDS = 0.3; // final strafe
     // private static final double THIRD_DRIVE_SECONDS = 1.2;
     private static final double LAUNCH_VELOCITY_TARGET = 1180;
     private static final double LAUNCH_VELOCITY_MIN = 1100;
+    private static final double SPIN_UP_TIMEOUT_SECONDS = 4.0;
     private static final double FEED_SECONDS = 10.0;
 
     @Override
@@ -67,29 +67,41 @@ public class _37245_SBotAutoV2 extends LinearOpMode {
         if (isStopRequested()) return;
 
         imu.resetYaw();
-        
+
+        // --- Spin up launcher (wait until fast enough, with a timeout) ---
         launcher.setVelocity(LAUNCH_VELOCITY_TARGET);
-        
-        while(launcher.getVelocity() >= LAUNCH_VELOCITY_MIN){
-            windmill.setPower(-1);
+
+        double spinUpDeadline = getRuntime() + SPIN_UP_TIMEOUT_SECONDS;
+        while (opModeIsActive()
+                && Math.abs(launcher.getVelocity()) < LAUNCH_VELOCITY_MIN
+                && getRuntime() < spinUpDeadline) {
+            telemetry.addData("launcher vel", launcher.getVelocity());
+            telemetry.update();
+            idle();
         }
-        
-        
-        sleep((long) (FEED_SECONDS * 1000));      
+
+        // --- Feed for FEED_SECONDS (Stop button still works) ---
+        windmill.setPower(-1);
+        // intake.setPower(1.0); // uncomment if balls need the intake to reach the windmill
+
+        double feedEnd = getRuntime() + FEED_SECONDS;
+        while (opModeIsActive() && getRuntime() < feedEnd) {
+            telemetry.addData("launcher vel", launcher.getVelocity());
+            telemetry.update();
+            idle();
+        }
 
         launcher.setVelocity(0);
         windmill.setPower(0.0);
-        
-        setDrive(0,0.45,0);
-        sleep(1750);
-  
+        intake.setPower(0.0);
+
+        // --- Drive off the line ---
+        strafe(DRIVE_POWER, STRAFE_SECONDS);
         driveBackward(FIRST_DRIVE_SECONDS);
         // turnDegrees(-95);
         // driveForward(SECOND_DRIVE_SECONDS);
+        strafe(DRIVE_POWER, SECOND_DRIVE_SECONDS);
 
-        setDrive(0,0.45,0);
-        sleep(300);
-        
         stopDrive();
     }
 
@@ -110,16 +122,24 @@ public class _37245_SBotAutoV2 extends LinearOpMode {
             if (Math.abs(error) < 3.0) break;
 
             double power = Math.max(0.12,
-                Math.min(0.15, Math.abs(error) * 0.012));//lower to see jitters
-            setDrive(0, 0, Math.signum(error) * power);//negate to see jitters
+                Math.min(0.15, Math.abs(error) * 0.012));
+            // IMU yaw is CCW-positive, but positive turn in setDrive is CW, so negate
+            setDrive(0, 0, -Math.signum(error) * power);
         }
 
         stopDrive();
         sleep(200);
     }
 
+    private void strafe(double power, double seconds) {
+        setDrive(0, power, 0);
+        sleep((long) (seconds * 1000));
+        stopDrive();
+        sleep(100);
+    }
+
     private void driveBackward(double seconds) {
-        setDrive(-1*DRIVE_POWER, 0, 0);
+        setDrive(-DRIVE_POWER, 0, 0);
         sleep((long) (seconds * 1000));
         stopDrive();
         sleep(150);
@@ -151,3 +171,4 @@ public class _37245_SBotAutoV2 extends LinearOpMode {
     private void stopDrive() {
         setDrive(0, 0, 0);
     }
+}
