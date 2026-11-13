@@ -83,7 +83,7 @@ public class StuyPoofsSRCv1 extends OpMode {
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(
             new RevHubOrientationOnRobot(//UPDATE
-            RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+            RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
             )
         );
@@ -149,9 +149,12 @@ public class StuyPoofsSRCv1 extends OpMode {
         double strafe = -gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
 
-/*        if(gamepad1.x){imu.resetYaw();}//click at start of a match to set what direction we're relative to 
+        if(gamepad1.x){
+            imu.resetYaw();
+        }
+        //click at start of a match to set what direction we're relative to 
 
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        /* double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         //these are translated to what the robot uses
         double roboX = strafe * Math.cos(heading) - forward * Math.sin(heading);
         double roboY = strafe * Math.sin(heading) + forward * Math.cos(heading);
